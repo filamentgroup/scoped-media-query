@@ -53,7 +53,7 @@ Accepts sets of selector/media query pairs as arguments. Enclosed styles' select
 ### Sample Output:
 
 ``` css
-@media only screen and (min-width: 30em) {
+@media (min-width: 30em) {
   .content .schedule-component {
     float: left;
     width: 100%;
@@ -67,7 +67,7 @@ Accepts sets of selector/media query pairs as arguments. Enclosed styles' select
     padding: 0;
   }
 }
-@media only screen and (min-width: 90em) {
+@media (min-width: 90em) {
   aside .schedule-component {
     float: left;
     width: 100%;
