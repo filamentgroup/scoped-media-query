@@ -1,18 +1,81 @@
 /*
-  Scoped Media Query Mixin - an element query workaround.
-  Accepts sets of selector/media query pairs as arguments. 
-  Enclosed styles' selectors are prefixed by each passed selector within an outputted media query block.
-  [c]2013 @micahgodbolt, @jpavon, and @filamentgroup. MIT License.
+  Scoped Media Query Mixins - an element query workaround.
+
+  @mixin respond-to-all : generates @media () {}
+  @mixin respond-to-screen : generates @media screen and () {}
+  @mixin respond-to-screen-only : generates @media screen only and () {}
+
+
+  Accepts the following input :
+
+  * $width
+  * $width, $width, $width, ...
+  * ($width, $class)
+  * ($width, $class), ($width, $class), ...
+  * (($width, $widthType), ($width, $widthType), ...)
+  * (($width, $widthType), $class)
+  * (($width, $widthType), $class)), (($width, $widthType), $class)), ...
+  * any combination of the above
+
+  "(($width, $widthType))" isn't supported because SCSS automaticly flattens the list to "($width, $widthType)", which doesn't allow the code to distinguish it from ($width, $class).
+  [c]2013 @micahgodbolt, @jpavon, @filamentgroup and @johnslegers. MIT License.
 */
-@mixin scopedmediaquery($queries...) {
-    $length: length($queries);
-    @for $i from 1 through $length{
-        @if $i % 2 == 1 {
-            @media #{nth($queries, $i)} {
-                #{nth($queries, $i+1)} {
-                  @content;
+
+// Dynamically generate a media query of type $media
+@mixin media($parameter, $value, $media : null) {
+  @if $media == null {
+    @media (#{$parameter}: #{$value}) {
+        @content;
+    }
+  } @else if $media == 'screen' {
+    @media screen and (#{$parameter}: #{$value}) {
+        @content;
+    }
+  } @else if $media == 'screen only' {
+    @media screen only and (#{$parameter}: #{$value}) {
+        @content;
+    }
+  }
+}
+
+// Prefix media query with a class of your choice
+@mixin mediaQuery($type, $parameter, $value, $query) {
+    @include media(#{$parameter}, #{$value}, $type) {
+        $length: length($query);
+        @if ( $length > 1 ) {
+            @for $i from 2 through $length {
+                $class : nth($query, $i);
+                #{$class} {
+                    @content;
                 }
             }
+        } @else {
+            @content;
         }
     }
 }
+
+
+// Generate media query of type $media
+@mixin respond-to($media, $queries...) {
+    @each $query in $queries {
+        $width : nth($query, 1);
+        $parameter : 'min-width';
+        $value : $width;
+        $lengthwidth : length($width);
+        @if($lengthwidth > 1){
+            $parameter : nth($width, 2);
+            $value : nth($width, 1);
+        } @else {
+            $parameter : 'min-width';
+            $value : $width;
+        }
+        @include mediaQuery($media, $parameter, $value, $query) {
+            @content;
+        }
+    }
+}
+
+@mixin respond-to-all($queries...) {@include respond-to(null, $queries...){@content;}}
+@mixin respond-to-screen($queries...) {@include respond-to('screen', $queries...){@content;}}
+@mixin respond-to-screen-only($queries...) {@include respond-to('screen-only', $queries...){@content;}}
