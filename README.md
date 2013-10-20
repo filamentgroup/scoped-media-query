@@ -31,8 +31,8 @@ Accepts sets of selector/media query pairs as arguments. Enclosed styles' select
 
 ``` scss
   @include scopedmediaquery(
-    '(min-width : 30em)', '.content',
-    '(min-width : 90em)', 'aside'
+    'only screen and (min-width : 30em)', '.content',
+    'only screen and (min-width : 90em)', 'aside'
   ) {
   /* breakpoint styles here */
   .schedule-component {
