@@ -5,102 +5,82 @@ An element query workaround. Sass mixins for scoping CSS styles to apply only wi
 
 Addresses the problem explained in this article: http://filamentgroup.com/lab/element_query_workarounds/
 
-  * $width
-  * $width, $width, $width, ...
-  * ($width, $class)
-  * ($width, $class), ($width, $class), ...
-  * (($width, $widthType), ($width, $widthType), ...)
-  * (($width, $widthType), $class)
-  * (($width, $widthType), $class)), (($width, $widthType), $class)), ...
-  * any combination of the above
-
-[c]2013 @micahgodbolt, @jpavon, @filamentgroup abd @johnslegers. MIT License.
-
-
-## The mixins:
 
 ``` scss
-// Dynamically generate a media query of type $media
-@mixin media($parameter, $value, $media : null) {
-  @if $media == null {
-    @media (#{$parameter}: #{$value}) {
-        @content;
-    }
-  } @else if $media == 'screen' {
-    @media screen and (#{$parameter}: #{$value}) {
-        @content;
-    }
-  } @else if $media == 'screen only' {
-    @media screen only and (#{$parameter}: #{$value}) {
-        @content;
-    }
-  }
-}
- 
-// Prefix media query with a class of your choice
-@mixin mediaQuery($type, $parameter, $value, $query) {
-    @include media(#{$parameter}, #{$value}, $type) {
-        $length: length($query);
-        @if ( $length > 1 ) {
-            @for $i from 2 through $length {
-                $class : nth($query, $i);
-                #{$class} {
-                    @content;
-                }
+$screensizes : (
+  'default' : 0 infinity,
+  'mobile' : 0 767px,
+  'phone' : 0 480px,
+  'tablet' : 481px 767px,
+  'desktop' : 768px 979px,
+  'widescreen' : 1200px infinity
+);
+
+@mixin respond-to($media) {
+    $range : map-get($screensizes, $media);
+    @if $range == null {
+        @warn 'Unknown screensize "#{$media}" for @mixin respond-to';
+    } @else {
+        $min-width : nth($range, 1);
+        $max-width : nth($range, 2);
+        @if $min-width > 0 {
+            @if $max-width != infinity {
+                @media only screen and (min-width: $min-width) and (max-width: $max-width) { @content; }
+            } @else {
+                @media only screen and (min-width: $min-width) { @content; }
             }
         } @else {
-            @content;
+            @if $max-width != infinity {
+                @media only screen and (max-width: $max-width) { @content; }
+            } @else {
+                @content;
+            }
         }
     }
 }
- 
- 
-// Generate media query of type $media
-@mixin respond-to($media, $queries...) {
-    @each $query in $queries {
-        $width : nth($query, 1);
-        $parameter : 'min-width';
-        $value : $width;
-        $lengthwidth : length($width);
-        @if($lengthwidth > 1){
-            $parameter : nth($width, 2);
-            $value : nth($width, 1);
-        } @else {
-            $parameter : 'min-width';
-            $value : $width;
-        }
-        @include mediaQuery($media, $parameter, $value, $query) {
-            @content;
-        }
-    }
-}
- 
-@mixin respond-to-all($queries...) {@include respond-to(null, $queries...){@content;}}
-@mixin respond-to-screen($queries...) {@include respond-to('screen', $queries...){@content;}}
-@mixin respond-to-screen-only($queries...) {@include respond-to('screen-only', $queries...){@content;}}
 ```
 
 ## Sample Usage:
 
 ``` scss
-@include respond-to-screen((32em, '.content'), (60em), (90em, aside, main)) {
-    .schedule-component {
-        float: left; 
-        width: 100%;
-        position:relative; 
+.s1 {
+  float : right;
+  width: 100%;
+  background : 'url(image/cool-background.jpg)';
+  @include respond-to(mobile) {
+    width : 40%
+  }
+}
+ 
+.s2 {
+    @include respond-to(default) {
+      width: 100%;
     }
-    .schedule-component ul,
-    .schedule-component li {
-       list-style: none;
-       position: absolute;
-       margin: 0;
-       padding: 0;
+    @include respond-to(mobile) {
+      float: right;
+      width: 300px;
+    }
+    @include respond-to(desktop) {
+      width: 125px;
+    }
+    @include respond-to(widescreen) {
+      float: none;
     }
 }
-
-@include respond-to-all(((32em, 'max-width'), '.tab'), ((64em, 'max-width'), '.tab', '.menu')) {
-    li {
-        width:100%; 
+ 
+.s3 {
+    @include respond-to(default) {
+      float: left;
+      width: 100%;
+    }
+    @include respond-to(desktop) {
+      width: 125px;
+    }
+    @include respond-to(phone) {
+        width: 400px;
+    }
+    @include respond-to(widescreen) {
+      float: none;
     }
 }
 ```
@@ -108,80 +88,55 @@ Addresses the problem explained in this article: http://filamentgroup.com/lab/el
 ### Sample Output:
 
 ``` css
-@media screen and (min-width: 32em) {
-  .content .schedule-component {
-    float: left;
-    width: 100%;
-    position: relative;
-  }
-  .content .schedule-component ul,
-  .content .schedule-component li {
-    list-style: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
+.s1 {
+  float: right;
+  width: 100%;
+  background: 'url(image/cool-background.jpg)';
+}
+@media only screen and (max-width: 767px) {
+  .s1 {
+    width: 40%;
   }
 }
-@media screen and (min-width: 60em) {
-  .schedule-component {
-    float: left;
-    width: 100%;
-    position: relative;
-  }
 
-  .schedule-component ul,
-  .schedule-component li {
-    list-style: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
+.s2 {
+  width: 100%;
+}
+@media only screen and (max-width: 767px) {
+  .s2 {
+    float: right;
+    width: 300px;
   }
 }
-@media screen and (min-width: 90em) {
-  aside .schedule-component {
-    float: left;
-    width: 100%;
-    position: relative;
+@media only screen and (min-width: 768px) and (max-width: 979px) {
+  .s2 {
+    width: 125px;
   }
-  aside .schedule-component ul,
-  aside .schedule-component li {
-    list-style: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
+}
+@media only screen and (min-width: 1200px) {
+  .s2 {
+    float: none;
   }
+}
 
-  main .schedule-component {
-    float: left;
-    width: 100%;
-    position: relative;
-  }
-  main .schedule-component ul,
-  main .schedule-component li {
-    list-style: none;
-    position: absolute;
-    margin: 0;
-    padding: 0;
+.s3 {
+  float: left;
+  width: 100%;
+}
+@media only screen and (min-width: 768px) and (max-width: 979px) {
+  .s3 {
+    width: 125px;
   }
 }
-@media (max-width: 32em) {
-  .tab li {
-    width: 100%;
+@media only screen and (max-width: 480px) {
+  .s3 {
+    width: 400px;
   }
 }
-@media (max-width: 64em) {
-  .tab li {
-    width: 100%;
-  }
-
-  .menu li {
-    width: 100%;
+@media only screen and (min-width: 1200px) {
+  .s3 {
+    float: none;
   }
 }
 ```
-
-
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/jslegers/scoped-media-query/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
