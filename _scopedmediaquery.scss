@@ -1,6 +1,6 @@
 /*
   Scoped Media Query Mixin - an element query workaround.
-  Accepts sets of selector/media query pairs as arguments. 
+  Accepts sets of selector/media query pairs as arguments.
   Enclosed styles' selectors are prefixed by each passed selector within an outputted media query block.
   [c]2013 @micahgodbolt, @jpavon, and @filamentgroup. MIT License.
 */
@@ -8,9 +8,15 @@
     $length: length($queries);
     @for $i from 1 through $length{
         @if $i % 2 == 1 {
-            @media #{nth($queries, $i)} {
-                #{nth($queries, $i+1)} {
+            @if nth($queries, $i+1) == '' {
+                @media #{nth($queries, $i)} {
                   @content;
+                }
+            } @else {
+                @media #{nth($queries, $i)} {
+                    #{nth($queries, $i+1)} {
+                      @content;
+                    }
                 }
             }
         }
