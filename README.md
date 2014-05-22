@@ -1,5 +1,6 @@
-Scoped Media Query Sass Mixin
-==================
+# Scoped Media Query Sass Mixin
+
+[![Filament Group](http://filamentgroup.com/images/fg-logo-positive-sm-crop.png) ](http://www.filamentgroup.com/)
 
 An element query workaround. A Sass mixin for scoping CSS styles to apply only within given selector/media query pairs.
 
@@ -7,7 +8,7 @@ Addresses the problem explained in this article: http://filamentgroup.com/lab/el
 
 Accepts sets of selector/media query pairs as arguments. Enclosed styles' selectors are prefixed by each passed selector within an outputted media query block.
 
-[c]2013 @micahgodbolt, @jpavon, and @filamentgroup. MIT License.
+©2013 @micahgodbolt, @jpavon, and @filamentgroup. MIT License.
 
 
 ## The mixin:
